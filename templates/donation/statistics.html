@@ -1,0 +1,168 @@
+{% extends 'accounts/base.html' %}
+
+{% block import_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.17/css/bootstrap-select.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+{% endblock %}
+
+{% block content %}
+
+{% for message in messages %}
+    <p id="messages">{{message}}</p>
+{% endfor %}
+
+<form method="POST">
+    {% csrf_token %}
+    <h2>Estadísticas de traslados</h2>
+
+    <div class="card-group">
+        <div class="col-xl-6 col-md-6 mb-6 offset-3">
+            <div class="card border-info border-left-info">
+                <div class="card-body">
+                    <h5 class="card-title text-info">Filtros dinámicos</h5>
+                    <div class="form-group">
+                        <label for="select-warehouse" class="form-control-label">Seleccionar Bodega destino</label>
+                        <select class="form-control selectpicker" name="warehouse" id="select-warehouse" data-live-search="true">
+                            <option value="all" data-tokens="all" selected="selected">TODAS</option>
+                        {% for warehouse in warehouses %}
+                            <option value="{{warehouse.id}}" data-tokens="{{warehouse.id}}">{{warehouse.name}}</option>
+                        {% endfor %}
+                        </select>
+                        <label for="select-product" class="form-control-label">Seleccionar Productos</label>
+                        <select class="form-control selectpicker" name="product" id="select-product" data-live-search="true">
+                            <option value="all" data-tokens="all" selected="selected">TODOS</option>
+                        {% for product in products %}
+                            <option value="{{product.id}}" data-tokens="{{product.id}}">{{product.name}}</option>
+                        {% endfor %}
+                        </select>
+                        <h6>Traslados</h6>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" name="approved" id="inlineRadio1" value="all" checked>
+                          <label class="form-check-label" for="inlineRadio1">TODOS</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" name="approved" id="inlineRadio2" value="no">
+                          <label class="form-check-label" for="inlineRadio2">No Aprobados</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" name="approved" id="inlineRadio3" value="yes">
+                          <label class="form-check-label" for="inlineRadio2">Aprobados</label>
+                        </div>
+                        <h6>Traslados con comentarios</h6>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" name="comment" id="inlineRadio4" value="all" checked>
+                          <label class="form-check-label" for="inlineRadio1">TODOS</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" name="comment" id="inlineRadio5" value="no">
+                          <label class="form-check-label" for="inlineRadio2">Sin comentarios</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" name="comment" id="inlineRadio6" value="yes">
+                          <label class="form-check-label" for="inlineRadio2">Con comentarios</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+
+    <div class="card-group">
+        <div class="col-xl-6 col-md-6 mb-6">
+            <div class="card border-info border-left-info">
+                <div class="card-body">
+                    <h5 class="card-title text-info">Creación de traslado</h5>
+                    <div class="form-group">
+                        <label for="select-user_origin" class="form-control-label">Seleccionar Usuario</label>
+                        <select class="form-control selectpicker" name="user_origin" id="select-user_origin" data-live-search="true">
+                            <option value="all" data-tokens="all" selected="selected">TODOS</option>
+                        {% for user in users %}
+                            <option value="{{user.id}}" data-tokens="{{user.id}}">{{user.username}}</option>
+                        {% endfor %}
+                        </select>
+                        <label for="datetime-1" class="form-control-label">Fecha desde</label>
+                        <input id="datetime-1" name='delivery_date1' class="datepicker form-control" data-date-format="yyyy-mm-dd">
+                        <label for="datetime-2" class="form-control-label">Fecha hasta</label>
+                        <input id="datetime-2" name='delivery_date2' class="datepicker form-control" data-date-format="yyyy-mm-dd">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-6 col-md-6 mb-6">
+            <div class="card border-info border-left-info">
+                <div class="card-body">
+                    <h5 class="card-title text-info">Recepción de traslado</h5>
+                    <div class="form-group">
+                        <label for="select-user_origin" class="form-control-label">Seleccionar Usuario</label>
+                        <select class="form-control selectpicker" name="user_destination" id="select-user_destination" data-live-search="true">
+                            <option value="all" data-tokens="all" selected="selected">TODOS</option>
+                        {% for user in users %}
+                            <option value="{{user.id}}" data-tokens="{{user.id}}">{{user.username}}</option>
+                        {% endfor %}
+                        </select>
+                        <label for="datetime-3" class="form-control-label">Fecha desde</label>
+                        <input id="datetime-3" name='delivery_date3' class="datepicker form-control" data-date-format="yyyy-mm-dd">
+                        <label for="datetime-4" class="form-control-label">Fecha hasta</label>
+                        <input id="datetime-4" name='delivery_date4' class="datepicker form-control" data-date-format="yyyy-mm-dd">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <div class="form-group">
+
+    </div>
+    <button class="btn btn-primary block-inline" value="reporte-traslados">Generar reporte</button>
+</form>
+
+<table class="table">
+    <thead>
+        <th>Bodega de origen</th>
+        <th>Usuario creación traslado</th>
+        <th>Bodega de destino</th>
+        <th>Usuario recepción de traslado</th>
+        <th>Producto</th>
+        <th>Cantidad</th>
+        <th>Comentario</th>
+        <th>Ya aprobados</th>
+    </thead>
+    <tbody>
+        {% for transfer in query%}
+        <tr>
+            <td>{{transfer.wh_origin.name}}</td>
+            <td>{{transfer.user_origin}}</td>
+            <td>{{transfer.wh_destination.name}}</td>
+            {% if transfer.user_destination %}
+            <td>{{transfer.user_destination}}</td>
+            {% else %}
+            <td>No se ha aprobado el traslado</td>
+            {% endif %}
+            <td>{{transfer.product}}</td>
+            <td>{{transfer.product_quantity}}</td>
+            <td>{{transfer.comment}}</td>
+            {% if transfer.approved %}
+            <td>SI</td>
+            {% else %}
+            <td>NO</td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
+
+{% block import_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.17/js/bootstrap-select.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"> </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" ></script>
+{% endblock %}
+
+{% block js %}
+    $('.datepicker').datepicker({ dateFormat: 'yy-mm-dd' });
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends 'accounts/base.html' %}
+
+{% block import_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.17/css/bootstrap-select.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.css">
+    <style>
+	canvas{
+		-moz-user-select: none;
+		-webkit-user-select: none;
+		-ms-user-select: none;
+	}
+	</style>
+{% endblock %}
+
+{% block content %}
+
+{% for message in messages %}
+    <p id="messages">{{message}}</p>
+{% endfor %}
+
+
+    <h2>Inventario de productos por categoria</h2>
+
+    <div class="card-group">
+        <div class="col-xl-6 col-md-6 mb-6 offset-3">
+            <div class="card border-info border-left-info">
+                <div class="card-body">
+                    <h5 class="card-title text-info">Configuración</h5>
+                    <div class="form-group">
+                        <label>Seleccione la bodega</label>
+                        <select id="warehouse" name="warehouse" class="form-control">
+                            {% for warehouse in warehouses %}
+                                <option value="{{warehouse.id}}">{{warehouse.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Seleccione la categoria</label>
+                        <select id="category" name="category" class="form-control">
+                            {% for category in categories %}
+                                <option value="{{category}}">{{category}}</option>
+                            {% endfor %}
+                        </select>
+                        <br>
+                        <label>Valor máximo</label>
+                        <input class="form-control" id="max" type="number" min="0" value="100">
+                        <br>
+                        <label>Primer corte</label>
+                        <input class="form-control" id="first" type="number" min="0" value="33">
+                        <br>
+                        <label>Segundo corte</label>
+                        <input class="form-control" id="second" type="number" min="0" value="66">
+                        <br>
+                        <button onclick="make_report_donation()" class="btn btn-info btn-lg btn-block" value="reporte-traslados">Generar reporte</button>
+                        <a class="btn btn-info btn-lg btn-block" href="{% url 'statistics_gra' %}">Regresar</a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+     <h3 id="titulo" style="text-align: center;"></h3>
+     <div id="gaugeArea" class="col-6 offset-3" style="text-align: center;"></div>
+
+{% endblock %}
+
+{% block import_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.17/js/bootstrap-select.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"> </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+    <script src="https://unpkg.com/gauge-chart@latest/dist/bundle.js"></script>
+{% endblock %}
+
+{% block js %}
+
+function make_report_donation(){
+    var warehouse = $('#warehouse').val();
+    var category = $('#category').val();
+    console.log(category);
+    $.ajax({
+        url: '/ajax/statistics_gra_12_ajax/',
+        data: {
+            'warehouse': warehouse,
+            'category': category
+        },
+        dataType: 'json',
+        traditional: true,
+        success: function (result) {
+            var label = result.name;
+            var stock = result.stock;
+            $("#titulo").text("Inventario de "+ label + ": " + stock + " unidades");
+            let first = $("#first").val();
+            let second = $("#second").val();
+            let max = $("#max").val();
+            $('#gaugeArea svg').remove();
+            let element = document.querySelector('#gaugeArea');
+            stock = parseInt((parseInt(stock)*100)/parseInt(max));
+            first = parseInt((parseInt(first)*100)/parseInt(max));
+            second = parseInt((parseInt(second)*100)/parseInt(max));
+
+            let chartWidth = 400
+
+            let gaugeOptions = {
+                hasNeedle: true,
+                needleColor: "black",
+                needleStartValue: 50,
+                arcColors: ["rgb(255,84,84)","rgb(239,214,19)","rgb(61,204,91)"],
+                arcDelimiters: [parseInt(first),parseInt(second)],
+                rangeLabel: ["0",max],
+            }
+
+            GaugeChart.gaugeChart(element, 300, gaugeOptions).updateNeedle(stock)
+
+        }
+    });
+}
+
+{% endblock %}

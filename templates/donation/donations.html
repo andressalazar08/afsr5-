@@ -1,0 +1,1043 @@
+{% extends 'accounts/base.html' %}
+
+{% block import_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker3.min.css">
+{% endblock %}
+
+{% block content %}
+
+{% for message in messages %}
+    <p id="messages">{{message}}</p>
+{% endfor %}
+<div class="row">
+        <label for="donation_approved" class="col-form-label">Donaciones aprobadas</label>
+        <select id="donation_approved" class="form-control" name="donation_approved">
+            <option value="no">NO</option>
+            <option value="si">SI</option>
+        </select>
+
+        <label for="donation" class="col-form-label">Seleccionar donación</label>
+        <select id="donation" class="form-control" name="donation">
+            <option value="...">...</option>
+        {% for donation in donations %}
+            <option value="{{donation.id}}">{{donation}}</option>
+        {% endfor %}
+        </select>
+</div>
+</br>
+<div class="row">
+    <div class="form-group col">
+        <div id="panel-info" class="card border-info border-left-info" style="display:none;">
+            <div class="card-body">
+                <h5 class="card-title text-info">Información de la donación</h5>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <label class="text-info" for="type">Identificación:</label>
+                        <span id="type"></span>
+                    </li>
+
+                    <li class="list-group-item ">
+                        <label class="text-info" for="donor_name">Nombre de usuario:</label>
+                        <span id="donor_name"></span>
+                    </li>
+                    <li class="list-group-item ">
+                            <label class="text-info" for="donor_phone">Teléfono:</label>
+                        <span id="donor_phone"></span>
+                    </li>
+                    <li class="list-group-item ">
+                            <label class="text-info" for="donor_email">Email:</label>
+                        <span id="donor_email"></span>
+                    </li>
+                    <li class="list-group-item ">
+                        <label class="text-info" for="donation_date">Fecha de donación:</label>
+                        <span id="donation_date"></span>
+                    </li>
+
+                    <li class="list-group-item ">
+                        <label class="text-info" for="donation_weight">Peso en kilos de la donación:</label>
+                        <span id="donation_weight"></span>
+                    </li>
+
+                    <li class="list-group-item ">
+                        <label class="text-info" for="donation_others">Otros:</label>
+                        <span id="donation_others"></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="form-group col">
+        <div id="panel-warning" class="card border-warning border-left-warning" style="display:none;">
+            <div class="card-body">
+                <h5 class="card-title text-warning">Información adicional de la donación</h5>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <label class="text-warning" for="type">Jornada:</label>
+                        <span id="time-option-warning"></span>
+                    </li>
+                    <li class="list-group-item">
+                        <label class="text-warning" for="type">Tipo de entrega:</label>
+                        <span id="donation_delivery_way-option-warning"></span>
+                    </li>
+                    <li class="list-group-item">
+                        <label class="text-warning" for="type">Fecha de entrega de donación:</label>
+                        <span id="delivery_date-warning"></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div id="info-editable" class="card border-success border-left-success" style="display:none;">
+            <div class="card-body">
+            <h5 class="card-title text-success">Información editable de la donación</h5>
+                <div id="time_option_container" class="row" >
+                    <label for="time-option">Jornada</label>
+                    <input type="hidden" id="current_donation">
+                    <select class="form-control" name="time-option" id="time-option">
+                    </select>
+                </div>
+                <div class="row" >
+                    <label for="time-option">Tipo de entrega</label>
+                    <select class="form-control" id="donation_delivery_way-option" id="donation_delivery_way-option">
+                    </select>
+                </div>
+                <div class="row" >
+                    <label for="delivery_date">Fecha de entrega de donación</label>
+                    <input id="delivery_date" class="datepicker form-control" data-date-format="yyyy-mm-dd">
+                </div>
+                <div class="row" >
+                    <label for="donor_address">Dirección del donante</label>
+                    <input id="donor_address" class="form-control" >
+                </div>
+                <div class="row" >
+                    <label for="donor_second_phone">Segundo teléfono</label>
+                    <input id="donor_second_phone" class="form-control" >
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div id="main-panel" class="row" style="display:none;">
+    <div id="panel-button" class="card border-primary border-left-primary col-md-4 offset-md-4">
+        <div class="card-body">
+            <h5 id="main-panel-title" class="card-title text-primary">Panel de aprobación</h5>
+            <div class="row">
+                <div id="show_add_product" class="">
+                    <div class="col text-center">
+                        <button id="add_product" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#add-product-modal">Añadir nuevo producto</button>
+                    </div>
+                </div>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div id="confirm_button_row" c>
+                        <div class="col text-center">
+                            <button id="confirm_button" class="btn btn-primary btn-lg" name="confirm_button">Aprobar donación</button>
+                        </div>
+                    </div>
+                    <div id="assign-wh" class="row" style="display: none">
+                        <div class="col text-center">
+                            <label for="select-wh">Asignar a bodega:</label>
+                            <select id="select-wh" name="select-wh" class="form-control">
+                                <option value="...">...</option>
+                                {% for warehouse in warehouses %}
+                                    <option value="{{warehouse.id}}">{{warehouse.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<br>
+
+<table id="products" class="table table-striped table-bordered table-product" style="width:100%">
+    <thead>
+        <tr>
+            <th>Nombre de producto</th>
+            <th>Cantidad a donar</th>
+            <th>Editar cantidad</th>
+            <th>Eliminar producto</th>
+            <th>Traslado a terceros</th>
+        </tr>
+    </thead>
+    <tbody id="table-body">
+    </tbody>
+</table>
+
+<table id="products-info" class="table table-striped table-bordered table-product" style="width:100%; display:none">
+    <thead>
+        <tr>
+            <th>Nombre de producto</th>
+            <th>Cantidad a donar</th>
+        </tr>
+    </thead>
+    <tbody id="table-body-info">
+    </tbody>
+</table>
+
+<div class="modal fade" id="update_product" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">New message</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <p id="update_product_error" ></p>
+            <label for="update-product-name" class="col-form-label">Producto:</label>
+            <input type="text" class="form-control" id="update-product-name" disabled>
+            <input type="hidden" id="update_product_id">
+          </div>
+          <div class="form-group">
+            <label for="update-product-quantity" class="col-form-label">Número de unidades actuales:</label>
+            <input type="text" class="form-control" id="update-product-quantity" disabled>
+          </div>
+          <div class="form-group">
+            <label for="update-product-new-quantity" class="col-form-label">Nuevo Número de unidades:</label>
+            <input type="text" class="form-control" id="update-product-new-quantity" >
+          </div>
+          <div class="form-group">
+            <label for="update-product-comment" class="col-form-label">Seleccionar motivo de actualización:</label>
+            <select class="form-control" id="select-reason">
+                <option value="Fecha de vencimiento">
+                    Fecha de vencimiento
+                </option>
+                <option value="Daño de fabrica">
+                    Daño de fabrica
+                </option>
+                <option value="Otro">
+                    Otro
+                </option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="update-product-comment" class="col-form-label">Comentario:</label>
+            <textarea class="form-control" id="update-product-comment"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-primary" id="product_quantity_update">Actualizar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="delete_product" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="delete_product_title">Eliminar producto</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <div class="form-group">
+            <p id="delete_product_error"></p>
+            <label for="update-product-name" class="col-form-label">Está seguro que desea eliminar este producto de la donación:</label>
+              <span type="text" class="form-control" id="delete_product_name" disabled></span>
+              <input type="hidden" id="delete_product_id">
+          </div>
+          <div class="form-group">
+            <label for="delete-product-comment" class="col-form-label">Comentario:</label>
+            <textarea class="form-control" id="delete-product-comment"></textarea>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-primary" id="product_delete">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="add-product-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" >Añadir producto a la donación</h5>
+        <p id="new_product_error" ></p>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <label for="select-product" class="form-control-label">Seleccionar productos</label>
+            <select class="form-control selectpicker" id="select-product" data-live-search="true">
+            <!--<option data-tokens="china">China</option> -->
+            {% for product in products %}
+                <option data-tokens="{{product.id}}">{{product.name}} {{product.measurement}} {{product.quantity}}</option>
+            {% endfor %}
+            </select>
+            <label for="quantity" class="form-control-label">Cantidad a donar</label>
+            <input class="form-control" id="quantity" type="number">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-primary" id="add_new_product">Agregar producto</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="move_third" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="third-title">Traslado a tercero</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <p id="transfer_error" ></p>
+            <label for="transfer-product-name" class="col-form-label">Producto:</label>
+            <input type="text" class="form-control" id="transfer-product-name" disabled>
+            <input type="hidden" id="transfer_product_id" name="transfer_product_id">
+            <input type="hidden" id="donation_id" name="donation_id">
+          </div>
+          <div class="form-group">
+            <label for="stock_quantity" class="col-form-label">Cantidad en stock:</label>
+            <input type="text" class="form-control" id="stock_quantity" disabled>
+          </div>
+          <div class="form-group">
+            <label for="select-wh" class="form-control-label">Seleccionar bodega</label>
+            <select class="form-control selectpicker" id="select-third" name="select-third" data-live-search="true">
+            <!--<option data-tokens="china">China</option> -->
+            {% for th in third %}
+            <option value="{{th.id}}" data-tokens="{{th.id}}">{{th.name}}</option>
+            {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="transfer-product-quantity" class="col-form-label">Unidades a trasladar de :</label>
+            <input type="text" class="form-control" id="transfer-product-quantity" name="transfer-product-quantity" >
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        <button type="submit" class="btn btn-primary" value="third_update"
+                id="third_update" name="third_update">Actualizar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block import_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"> </script>
+{% endblock %}
+
+{% block js%}
+
+var currentTime = new Date();
+$('.datepicker').datepicker({
+    startDate : currentTime
+});
+
+$('#third_update').click(function() {
+    let product_id = $("#transfer_product_id").val();
+    let donation_id = $("#donation_id").val();
+    var third = $('#select-third option:selected').attr('data-tokens');
+    var quantity = $('#transfer-product-quantity').val();
+    var stock = parseInt($('#stock_quantity').val());
+
+    if(!quantity){
+        $('#transfer_error').addClass("bg-gradient-danger");
+        $('#transfer_error').addClass("text-gray-200");
+        $('#transfer_error').text("Debes indicar la cantidad");
+    }
+    else if (!isInt(quantity)){
+        $('#transfer_error').addClass("bg-gradient-danger");
+        $('#transfer_error').addClass("text-gray-200");
+        $('#transfer_error').text("Debes ingresar un número entero");
+    }
+    else{
+        quantity = parseInt(quantity);
+    }
+
+    if(quantity>stock){
+        $('#transfer_error').addClass("bg-gradient-danger");
+        $('#transfer_error').addClass("text-gray-200");
+        $('#transfer_error').text("La cantidad de transferencia no puede ser mayor al total de la donación");
+    }
+    else{
+        $.ajax({
+            url: '/ajax/transfer_third/',
+            data: {
+              'product_id': product_id,
+              'third': third,
+              'quantity': quantity,
+              'donation_id': donation_id,
+            },
+            dataType: 'json',
+            traditional: true,
+            success: function (data) {
+                if (data.correct) {
+                    var ajax_product_id = data.product;
+                    var ajax_quantity = data.quantity;
+                    if(parseInt(ajax_quantity)==0){
+                        $("#"+ajax_product_id).remove();
+                    }
+                    else{
+                        $("#"+ajax_product_id).find("td:nth-child(2)").html(ajax_quantity);
+                        $("#"+ajax_product_id).find("button").attr("data-quantity", ajax_quantity);
+                    }
+                    $('#move_third').modal('toggle');
+
+                }
+            }
+        });
+    }
+
+
+});
+
+function isInt(value) {
+  return !isNaN(value) &&
+         parseInt(Number(value)) == value &&
+         !isNaN(parseInt(value, 10));
+}
+
+$('#add_new_product').click(function() {
+    let donation_id = $("#current_donation").val();
+    var product_id = $('#select-product option:selected').attr('data-tokens');
+    var quantity = $('#quantity').val();
+
+    if(!quantity){
+        $('#new_product_error').addClass("bg-gradient-danger");
+        $('#new_product_error').addClass("text-gray-200");
+        $('#new_product_error').text("Debes indicar la cantidad");
+    }
+    else{
+        $.ajax({
+            url: '/ajax/add_product_donation/',
+            data: {
+              'donation_id': donation_id,
+              'product_id': product_id,
+              'quantity': quantity,
+            },
+            dataType: 'json',
+            traditional: true,
+            success: function (data) {
+                if (data.correct) {
+
+                    let table_body = document.getElementById('table-body');
+                    let row = document.createElement('tr');
+                    row.setAttribute("id", data.new_product_id);
+                    let td_product = document.createElement('td');
+                    td_product.appendChild(document.createTextNode(data.product_name));
+                    row.appendChild(td_product);
+                    let td_stock = document.createElement('td');
+                    td_stock.appendChild(document.createTextNode(data.stock));
+                    row.appendChild(td_stock);
+
+                    let actions = document.createElement('td');
+                    let update_button = document.createElement('button');
+                    update_button.setAttribute("class", "fas fa-edit");
+                    update_button.setAttribute("data-toggle", "modal");
+                    update_button.setAttribute("data-target", "#update_product");
+                    update_button.setAttribute("data-id", data.new_product_id);
+                    update_button.setAttribute("data-name", data.product_name);
+                    update_button.setAttribute("data-quantity", data.stock);
+                    actions.appendChild(update_button);
+                    row.appendChild(actions);
+
+                    let action_delete = document.createElement('td');
+                    let delete_button = document.createElement('button');
+                    delete_button.setAttribute("class", "fas fa-trash-alt");
+                    delete_button.setAttribute("data-toggle", "modal");
+                    delete_button.setAttribute("data-target", "#delete_product");
+                    delete_button.setAttribute("data-id", data.new_product_id);
+                    delete_button.setAttribute("data-name", data.product_name);
+                    action_delete.appendChild(delete_button);
+                    row.appendChild(action_delete);
+
+                    if(data.third){
+                        let action_third = document.createElement('td');
+                        let third_button = document.createElement('button');
+                        third_button.setAttribute("class", "fas fa-gift");
+                        third_button.setAttribute("data-toggle", "modal");
+                        third_button.setAttribute("data-target", "#move_third");
+                        third_button.setAttribute("data-id", data.new_product_id);
+                        third_button.setAttribute("data-donation_id", donation_id);
+                        third_button.setAttribute("data-name", data.product_name);
+                        third_button.setAttribute("data-quantity", data.stock);
+                        action_third.appendChild(third_button);
+                        row.appendChild(action_third);
+                    }
+
+                    table_body.appendChild(row);
+                }
+                else if(data.exists){
+                    $('#new_product_error').addClass("bg-gradient-danger");
+                    $('#new_product_error').addClass("text-gray-200");
+                    $('#new_product_error').text("Producto ya en donación, actualiza!");
+                }
+                $('#add-product-modal').modal('toggle');
+            }
+        });
+    }
+});
+
+function show_weight(e){
+    let donation_id = $("#current_donation").val();
+    $.ajax({
+        url: '/ajax/get_weight/',
+        data: {
+          'donation_id': donation_id,
+        },
+        dataType: 'json',
+        traditional: true,
+        success: function (data) {
+            if (data.correct) {
+                let list_weight = document.getElementById('list-weight');
+                while (list_weight.firstChild) {
+                    list_weight.firstChild.remove();
+                }
+                jQuery.each(data.products_donation, function(key_not_used, result) {
+                    let measure = ''
+                    jQuery.each(result, function(key, value) {
+                        //alert(key);
+                        //alert(value);
+                        measure = measure + value + ' '
+                    });
+                    $('#list-weight').append('<li class="list-group-item">'+measure+'</li>');
+                });
+            }
+            else{
+                $('#display-weight').text("Error en el calculo");
+            }
+        }
+    });
+
+}
+
+$('#update_product').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var id = button.data('id');
+    var name = button.data('name');
+    var quantity = $("#"+id).find("td:nth-child(2)").html();
+    var modal = $(this);
+    modal.find('.modal-title').text('Cambiar numero de unidades');
+    modal.find('.modal-body #update_product_id').val(id);
+    modal.find('.modal-body #update-product-name').val(name);
+    modal.find('.modal-body #update-product-quantity').val(quantity);
+})
+
+$('#delete_product').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var id = button.data('id');
+    var name = button.data('name');
+    var modal = $(this);
+    modal.find('.modal-body #delete_product_id').val(id);
+    modal.find('.modal-body #delete_product_name').text(name);
+})
+
+$('#product_delete').click(function() {
+    var id = $('#delete_product_id').val();
+    var comment = $('#delete-product-comment').val();
+
+    if(!comment){
+        $('#delete_product_error').addClass("bg-gradient-danger");
+        $('#delete_product_error').addClass("text-gray-200");
+        $('#delete_product_error').text("Debes poner un comentario justificando la eliminación");
+    }
+    else{
+        $('#delete-product-comment').val("");
+
+        $.ajax({
+            url: '/ajax/delete_product_donation/',
+            data: {
+              'id': id,
+              'comment': comment,
+            },
+            dataType: 'json',
+            traditional: true,
+            success: function (data) {
+              if (data.correct) {
+                $("#"+id).remove();
+                $('#donation_weight').text(data.donation_weight + " Kilos");
+              }
+            }
+        });
+        $('#delete_product').modal('toggle');
+    }
+  });
+
+
+$('#product_quantity_update').click(function() {
+    var id = $('#update_product_id').val();
+    var quantity = $('#update-product-quantity').val();
+    var new_quantity = $('#update-product-new-quantity').val();
+    var comment = $('#update-product-comment').val();
+    let select_reason = $('#select-reason').val();
+    if(!comment){
+        $('#update_product_error').addClass("bg-gradient-danger");
+        $('#update_product_error').addClass("text-gray-200");
+        $('#update_product_error').text("Debes poner un comentario justificando el cambio");
+    }
+    else if(parseInt(new_quantity)<1){
+        $('#update_product_error').addClass("bg-gradient-danger");
+        $('#update_product_error').addClass("text-gray-200");
+        $('#update_product_error').text("La cantidad debe ser mayor a 1");
+    }
+    else if(select_reason==""){
+        $('#update_product_error').addClass("bg-gradient-danger");
+        $('#update_product_error').addClass("text-gray-200");
+        $('#update_product_error').text("Debes seleccionar el motivo de la actualización");
+    }
+    else{
+        $('#update-product-new-quantity').val("");
+        $('#update-product-comment').val("");
+
+        $.ajax({
+            url: '/ajax/update_quantity/',
+            data: {
+              'id': id,
+              'quantity': quantity,
+              'new_quantity': new_quantity,
+              'reason' : select_reason,
+              'comment': comment,
+            },
+            dataType: 'json',
+            traditional: true,
+            success: function (data) {
+              if (data.correct) {
+                $("#"+id).find("td:nth-child(2)").html(data.new_quantity);
+                $("#"+id).find("button").attr("data-quantity", data.new_quantity);
+                $('#donation_weight').text(data.donation_weight + " Kilos");
+
+              }
+            }
+        });
+        $('#update_product').modal('toggle');
+    }
+  });
+
+$("#select-wh").change(function(){
+    let donation_id = $("#current_donation").val();
+    let warehouse_id = $(this).val();
+
+    $.ajax({
+        url: '/ajax/update_warehouse/',
+        data: {
+          'id': donation_id,
+          'warehouse_id': warehouse_id,
+        },
+        dataType: 'json',
+        traditional: true,
+        success: function (data) {
+          if (data.correct) {
+          }
+        }
+    });
+});
+
+$('#donation_approved').change(function () {
+    var type = $(this).val();
+
+    $.ajax({
+        url: '/ajax/change_product_donation/',
+        data: {
+          'type': type,
+        },
+        dataType: 'json',
+        traditional: true,
+        success: function (data) {
+
+          if(type=="si"){
+             $('#products-info').css("display", "inline-table");
+             $('#products').css("display", "none");
+          }
+          else{
+             $('#products-info').css("display", "none");
+             $('#products').css("display", "inline-table");
+          }
+
+          $('#type').text("");
+          $('#donor_name').text("");
+          $('#donation_date').text("");
+          $('#donation_delivery_way').text("");
+          $('#donation_delivery_date').text("");
+          $('#donation_delivery_date_time').text("");
+          $('#others').text("");
+
+          let table_body = document.getElementById('table-body');
+          let table_body_info = document.getElementById('table-body-info');
+          while (table_body.firstChild) {
+              table_body.firstChild.remove();
+          }
+          while (table_body_info.firstChild) {
+              table_body_info.firstChild.remove();
+          }
+
+          let select = document.getElementById('donation');
+
+          while (select.firstChild) {
+              select.firstChild.remove();
+          }
+
+          let default_option = document.createElement('option');
+          default_option.setAttribute("value", "...");
+          default_option.appendChild(document.createTextNode("..."));
+          select.appendChild(default_option);
+
+          $('#info-editable').css("display", "none");
+          $('#panel-info').css("display", "none");
+          $('#panel-warning').css("display", "none");
+
+          $('#assign-wh').css("display", "none");
+          $('#main-panel').css("display", "none");
+
+          if (data.correct) {
+            var donations = data.donations;
+
+            jQuery.each(donations, function(key, value) {
+              let option = document.createElement('option');
+              option.setAttribute("value", value.id);
+              var donation_time = new Date(value.donation_time);
+              option.appendChild(document.createTextNode(value.donor_name + " " + donation_time));
+              select.appendChild(option);
+            });
+          }
+        }
+    });
+});
+
+
+$('#donation').change(function () {
+        donation_id = $(this).val();
+
+        $.ajax({
+        url: '/ajax/info_donation/',
+        data: {
+          'donation_id': donation_id,
+        },
+        dataType: 'json',
+        traditional: true,
+        success: function (data) {
+          if (data.correct) {
+            let select_option = $('#donation_approved').val();
+            let table_body = document.getElementById('table-body');
+            let table_body_info = document.getElementById('table-body-info');
+
+            while (table_body.firstChild) {
+                table_body.firstChild.remove();
+            }
+
+            $('#panel-info').css("display", "block");
+
+            if(select_option=="no"){
+                $('#info-editable').css("display", "block");
+                $('#panel-warning').css("display", "none");
+                let select = document.getElementById('time-option');
+                let select_delivery_way = document.getElementById('donation_delivery_way-option');
+
+                $("#current_donation").val(donation_id);
+
+                $('#main-panel').css("display", "block");
+                $('#confirm_button').val(donation_id);
+
+                $('#products').css("display", "inline-table");
+
+                while (select.firstChild) {
+                    select.firstChild.remove();
+                }
+
+                while(select_delivery_way.firstChild) {
+                    select_delivery_way.firstChild.remove();
+                }
+
+                $('#show_add_product').css("display", "block");
+                $('#confirm_button_row').css("display", "block");
+                $('#assign-wh').css("display", "none");
+
+                $('#main-panel-title').text("Panel de aprobación");
+
+                $('#time_option_container').css("display", "block");
+                let option1 = document.createElement('option');
+                option1.setAttribute("value", "Mañana");
+                option1.appendChild(document.createTextNode("Mañana"));
+                select.appendChild(option1);
+                let option2 = document.createElement('option');
+                option2.setAttribute("value", "Tarde");
+                option2.appendChild(document.createTextNode("Tarde"));
+                select.appendChild(option2);
+
+                if(data.delivery_date_time=="Mañana"){
+                    select.value="Mañana";
+                }
+                else{
+                    select.value="Tarde";
+                }
+
+                let option1_delivery = document.createElement('option');
+                option1_delivery.setAttribute("value", "Recogida a mi domicilio");
+                option1_delivery.appendChild(document.createTextNode("Recogida a mi domicilio"));
+                select_delivery_way.appendChild(option1_delivery);
+                let option2_delivery = document.createElement('option');
+                option2_delivery.setAttribute("value", "Puedo entregar mi donación en un punto");
+                option2_delivery.appendChild(document.createTextNode("Puedo entregar mi donación en un punto"));
+                select_delivery_way.appendChild(option2_delivery);
+
+                if(data.donation_delivery_way=="Puedo entregar mi donación en un punto"){
+                    select_delivery_way.value="Puedo entregar mi donación en un punto";
+                }
+                else{
+                    select_delivery_way.value="Recogida a mi domicilio";
+                }
+
+                $('#delivery_date').val(data.donation_delivery_date);
+                $('#donor_address').val(data.donor_address);
+
+                $('#type').text(data.donor_type + " " + data.donor_id);
+                $('#donor_name').text(data.donor_name);
+                $('#donation_weight').text(data.donation_weight + " Kilos");
+
+                let createdDate = new Date(data.donation_date);
+                let date = createdDate.toLocaleDateString();
+                let time = createdDate.toLocaleTimeString().replace(/(.*)\D\d+/, '$1');
+                $('#donation_date').text(data.donation_date);
+                $('#donor_phone').text(data.donor_phone);
+                $('#donor_email').text(data.donor_email);
+
+                if(data.donation_others){
+                    $('#donation_others').text(data.donation_others);
+                }
+                else{
+                    $('#donation_others').text("");
+                }
+
+                if(data.donor_second_phone){
+                    $('#donor_second_phone').val(data.donor_second_phone);
+                }
+                else{
+                    $('#donor_second_phone').text("");
+                }
+
+                var product_donation = data.product_donations;
+
+                jQuery.each(product_donation, function(key, value) {
+                    let row = document.createElement('tr');
+                    row.setAttribute("id", value.id);
+                    let td_product = document.createElement('td');
+                    td_product.appendChild(document.createTextNode(value.product_name));
+                    row.appendChild(td_product);
+                    let td_stock = document.createElement('td');
+                    td_stock.appendChild(document.createTextNode(value.stock));
+                    row.appendChild(td_stock);
+
+                    let actions = document.createElement('td');
+                    let update_button = document.createElement('button');
+                    update_button.setAttribute("class", "fas fa-edit");
+                    update_button.setAttribute("data-toggle", "modal");
+                    update_button.setAttribute("data-target", "#update_product");
+                    update_button.setAttribute("data-id", value.id);
+                    update_button.setAttribute("data-name", value.product_name);
+                    update_button.setAttribute("data-quantity", value.stock);
+                    actions.appendChild(update_button);
+                    row.appendChild(actions);
+
+                    let action_delete = document.createElement('td');
+                    let delete_button = document.createElement('button');
+                    delete_button.setAttribute("class", "fas fa-trash-alt");
+                    delete_button.setAttribute("data-toggle", "modal");
+                    delete_button.setAttribute("data-target", "#delete_product");
+                    delete_button.setAttribute("data-id", value.id);
+                    delete_button.setAttribute("data-name", value.product_name);
+                    action_delete.appendChild(delete_button);
+                    row.appendChild(action_delete);
+
+                    if(value.third){
+                        let action_third = document.createElement('td');
+                        let third_button = document.createElement('button');
+                        third_button.setAttribute("class", "fas fa-gift");
+                        third_button.setAttribute("data-toggle", "modal");
+                        third_button.setAttribute("data-target", "#move_third");
+                        third_button.setAttribute("data-id", value.id);
+                        third_button.setAttribute("data-donation_id", value.donation_id);
+                        third_button.setAttribute("data-name", value.product_name);
+                        third_button.setAttribute("data-quantity", value.stock);
+                        action_third.appendChild(third_button);
+                        row.appendChild(action_third);
+                    }
+
+                    table_body.appendChild(row);
+
+                });
+            }
+            else if(select_option=="si"){
+                $('#panel-warning').css("display", "block");
+                $('#info-editable').css("display", "none");
+
+                $("#current_donation").val(donation_id);
+
+                $('#products_info').css("display", "inline-table");
+
+                $('#type').text(data.donor_type + " " + data.donor_id);
+                $('#donor_name').text(data.donor_name);
+                $('#donation_date').text(data.donation_date);
+                $('#donation_weight').text(data.donation_weight + " Kilos");
+
+                $('#time-option-warning').text(data.delivery_date_time);
+                $('#donation_delivery_way-option-warning').text(data.donation_delivery_way);
+                $('#delivery_date-warning').text(data.donation_delivery_date);
+
+
+                if(data.donation_others){
+                    $('#donation_others').text(data.donation_others);
+                }
+                else{
+                    $('#donation_others').text("");
+                }
+
+                $('#show_add_product').css("display", "none");
+                $('#confirm_button_row').css("display", "none");
+                $('#main-panel').css("display", "block");
+                $('#assign-wh').css("display", "block");
+                $('#select-wh').val(data.donation_warehouse);
+
+                $('#main-panel-title').text("Panel de asignación de bodegas");
+
+                var product_donation = data.product_donations;
+
+                $('#time-option').attr("disabled", true);
+                $('#time-option').attr("disabled", true);
+
+                jQuery.each(product_donation, function(key, value) {
+                    let row = document.createElement('tr');
+                    row.setAttribute("id", value.id);
+                    let td_product = document.createElement('td');
+                    td_product.appendChild(document.createTextNode(value.product_name));
+                    row.appendChild(td_product);
+                    let td_stock = document.createElement('td');
+                    td_stock.appendChild(document.createTextNode(value.stock));
+                    row.appendChild(td_stock);
+
+                    table_body_info.appendChild(row);
+
+                });
+            }
+
+          }
+        }
+      });
+    });
+
+$('#move_third').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var id = button.data('id');
+        var donation_id = button.data('donation_id');
+        var name = button.data('name');
+        var quantity = button.data('quantity');;
+        var modal = $(this);
+        modal.find('.modal-body #transfer_product_id').val(id);
+        modal.find('.modal-body #transfer-product-name').val(name);
+        modal.find('.modal-body #stock_quantity').val(quantity);
+        modal.find('.modal-body #donation_id').val(donation_id);
+    });
+
+$('#time-option').change(function () {
+    var option = $(this).val();
+    var donation = $('#current_donation').val();
+    $.ajax({
+        url: '/ajax/update_time_option/',
+        data: {
+          'donation_id': donation,
+          'time_option': option,
+        },
+        dataType: 'json',
+        traditional: true,
+        success: function (data) {
+
+        }
+    });
+});
+
+$('#donation_delivery_way-option').change(function () {
+    var option = $(this).val();
+    var donation = $('#current_donation').val();
+    $.ajax({
+        url: '/ajax/update_delivery_way/',
+        data: {
+          'donation_id': donation,
+          'delivery_way_option': option,
+        },
+        dataType: 'json',
+        traditional: true,
+        success: function (data) {
+
+        }
+    });
+});
+
+$('#delivery_date').change(function () {
+    var option = $(this).val();
+    var donation = $('#current_donation').val();
+    $.ajax({
+        url: '/ajax/update_delivery_date/',
+        data: {
+          'donation_id': donation,
+          'delivery_delivery_date': option,
+        },
+        dataType: 'json',
+        traditional: true,
+        success: function (data) {
+
+        }
+    });
+});
+
+$('#donor_address').change(function () {
+    var donor_address = $(this).val();
+    var donation = $('#current_donation').val();
+    $.ajax({
+        url: '/ajax/update_address/',
+        data: {
+          'donation_id': donation,
+          'donor_address': donor_address,
+        },
+        dataType: 'json',
+        traditional: true,
+        success: function (data) {
+
+        }
+    });
+});
+
+$('#donor_second_phone').change(function () {
+    var donor_second_phone = $(this).val();
+    var donation = $('#current_donation').val();
+    $.ajax({
+        url: '/ajax/update_donor_second_phone/',
+        data: {
+          'donation_id': donation,
+          'donor_second_phone': donor_second_phone,
+        },
+        dataType: 'json',
+        traditional: true,
+        success: function (data) {
+
+        }
+    });
+});
+
+{% endblock %}

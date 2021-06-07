@@ -1,0 +1,82 @@
+{% extends 'accounts/base.html' %}
+
+{% block import_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.17/css/bootstrap-select.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.css">
+    <style>
+	canvas{
+		-moz-user-select: none;
+		-webkit-user-select: none;
+		-ms-user-select: none;
+		//width:800px !important;
+        //height:300px !important;
+	}
+
+	</style>
+{% endblock %}
+
+{% block content %}
+
+{% for message in messages %}
+    <p id="messages">{{message}}</p>
+{% endfor %}
+
+
+    <h2>Familias atendidas vs Familias pendientes de recibir donación</h2>
+    <br>
+
+    <div style="width:100%;">
+		<canvas id="line-chart" width="1400" height="450"></canvas>
+	</div>
+    <br>
+    <a class="btn btn-info btn-lg btn-block" href="{% url 'statistics_gra' %}">Regresar</a>
+
+
+{% endblock %}
+
+{% block import_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.17/js/bootstrap-select.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"> </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+{% endblock %}
+
+{% block js %}
+    var give = {{beneficiary_give}};
+    var not_give = {{beneficiary_give_not}};
+    var canvas = document.getElementById("line-chart");
+    var ctx = canvas.getContext('2d');
+
+    var data = {
+        labels: ["Familias atendidas", "Familias pendientes de ayuda"],
+          datasets: [
+            {
+                fill: true,
+                backgroundColor: [
+                    '#00e64d',
+                    '#3366ff'],
+                data: [give, not_give],
+    // Notice the borderColor
+                borderColor:	['black', 'black'],
+                borderWidth: [2,2]
+            }
+        ]
+    };
+
+    // Notice the rotation from the documentation.
+
+    var options = {
+            rotation: -0.7 * Math.PI
+    };
+
+
+    // Chart declaration:
+    var myBarChart = new Chart(ctx, {
+        type: 'pie',
+        data: data,
+        options: options
+    });
+
+{% endblock %}

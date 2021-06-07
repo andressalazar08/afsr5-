@@ -1,0 +1,15 @@
+{% if products %}
+  <ul>
+  {% for product in products %}
+    <div class="form-row">
+      <div class="col">
+        <input type="checkbox" class="custom-control-input" id="{{product.id}}" required>
+        <label class="custom-control-label" for="{{product.id}}">{{ product.name }}</label>
+      </div>
+
+    </div>
+  {% endfor %}
+  </ul>
+{% else %}
+  <p>No se encuentran products con este filtro.</p>
+{% endif %}

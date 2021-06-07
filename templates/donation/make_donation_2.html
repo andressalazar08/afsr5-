@@ -1,0 +1,95 @@
+{% extends 'accounts/base.html' %}
+
+
+{% block content %}
+
+{% for message in messages %}
+    <p id="messages">{{message}}</p>
+{% endfor %}
+
+<table>
+<form method="POST">
+    {% csrf_token %}
+    {{form.as_p}}
+    <label for="recogida">Por favor indicar cómo hacer la entrega de la donación</label>
+    <div class="card bg-red" id="recogida">
+        <div class="form-check bg-gray-300">
+            <input class="form-check-input" type="radio" name="recodiga_radio" id="exampleRadios1" value="option1" checked>
+            <label class="form-check-label" for="exampleRadios1">
+            Recogida a mi domicilio
+            </label>
+        </div>
+        <div class="form-check bg-gray-300">
+            <input class="form-check-input" type="radio" name="recodiga_radio" id="exampleRadios2" value="option2">
+            <label class="form-check-label" for="exampleRadios2">
+            Puedo entrega mi donación en un punto
+            </label>
+        </div>
+    </div>
+
+    <p>
+        <label for="datetime">En qué fecha puedes entregar o podemos recoger la donación </label>
+            <input id="datetime" class="datepicker form-control" data-date-format="mm/dd/yyyy">
+    </p>
+
+    <div class="col-6 align-left">
+        <i id="search-icon" class="fas fa-search"></i>
+        <input id="user-input" placeholder="Buscar">
+    </div>
+    <div id="replaceable-content" class="col-6">
+        {% include 'donation/show_products.html' %}
+    </div>
+
+    <br/>
+    <button type="submit" class="btn btn-primary" value="create-donor">Hacer donación</button>
+    <a class="btn btn-primary" href="{% url 'donors'%}">Regresar</a>
+</form>
+</table>
+
+{% endblock %}
+
+{% block js %}
+    $('.datepicker').datepicker();
+
+    const user_input = $("#user-input")
+    const search_icon = $('#search-icon')
+    const artists_div = $('#replaceable-content')
+    const endpoint = '/donation/'
+    const delay_by_in_ms = 700
+    let scheduled_function = false
+
+    let ajax_call = function (endpoint, request_parameters) {
+        $.getJSON(endpoint, request_parameters)
+            .done(response => {
+                // fade out the artists_div, then:
+                artists_div.fadeTo('slow', 0).promise().then(() => {
+                    // replace the HTML contents
+                    artists_div.html(response['html_from_view'])
+                    // fade-in the div with new contents
+                    artists_div.fadeTo('slow', 1)
+                    // stop animating search icon
+                    search_icon.removeClass('blink')
+                })
+            })
+    }
+
+
+    user_input.on('keyup', function () {
+
+        const request_parameters = {
+            q: $(this).val() // value of user_input: the HTML element with ID user-input
+        }
+
+        // start animating the search icon with the CSS class
+        search_icon.addClass('blink')
+
+        // if scheduled_function is NOT false, cancel the execution of the function
+        if (scheduled_function) {
+            clearTimeout(scheduled_function)
+        }
+
+        // setTimeout returns the ID of the function to be executed
+        scheduled_function = setTimeout(ajax_call, delay_by_in_ms, endpoint, request_parameters)
+    })
+
+{% endblock %}

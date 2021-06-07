@@ -1,0 +1,118 @@
+{% extends 'accounts/base.html' %}
+
+{% block import_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.17/css/bootstrap-select.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.css">
+    <style>
+	canvas{
+		-moz-user-select: none;
+		-webkit-user-select: none;
+		-ms-user-select: none;
+	}
+	</style>
+{% endblock %}
+
+{% block content %}
+
+{% for message in messages %}
+    <p id="messages">{{message}}</p>
+{% endfor %}
+
+
+    <h2>Inventario de productos por categoria</h2>
+
+    <div class="card-group">
+        <div class="col-xl-6 col-md-6 mb-6 offset-3">
+            <div class="card border-info border-left-info">
+                <div class="card-body">
+                    <h5 class="card-title text-info">Configuración</h5>
+                    <div class="form-group">
+                        <label>Seleccione la categoria</label>
+                        <select id="category" name="category" class="form-control">
+                            <option value="0">--</option>
+                            {% for category in categories %}
+                                <option value="{{category}}">{{category}}</option>
+                            {% endfor %}
+                        </select>
+                        <br>
+                        <button onclick="make_report_donation()" class="btn btn-info btn-lg btn-block" value="reporte-traslados">Generar reporte</button>
+                        <a class="btn btn-info btn-lg btn-block" href="{% url 'statistics_gra' %}">Regresar</a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div style="width:100%;">
+		<canvas id="line-chart" width="1400" height="450"></canvas>
+	</div>
+
+{% endblock %}
+
+{% block import_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.17/js/bootstrap-select.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"> </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+    <script src="https://unpkg.com/gauge-chart@latest/dist/bundle.js"></script>
+{% endblock %}
+
+{% block js %}
+
+function make_report_donation(){
+    var category = $('#category').val();
+    console.log(category);
+    $.ajax({
+        url: '/ajax/statistics_gra_16_ajax/',
+        data: {
+            'category': category
+        },
+        dataType: 'json',
+        traditional: true,
+        success: function (result) {
+            var labels = result.labels;
+            var values = result.values;
+            console.log(labels);
+            console.log(values);
+
+            var canvas = document.getElementById("line-chart");
+            var ctx = canvas.getContext('2d');
+
+            var color = ['#ff8080','#3333ff','#99ff33','#ffff66','#4dd2ff','#e600e6','#ff9933','#a3a3c2','#669900','#992600']
+
+            Chart.defaults.global.defaultFontSize = 18;
+            var data = {
+                labels: labels,
+                  datasets: [
+                    {
+                        fill: true,
+                        backgroundColor: color,
+                        data: values,
+                        borderColor: ['black', 'black'],
+                        borderWidth: [2,2]
+                    }
+                ]
+            };
+
+            // Notice the rotation from the documentation.
+
+            var options = {
+                    rotation: -0.7 * Math.PI
+            };
+
+
+            // Chart declaration:
+            var myBarChart = new Chart(ctx, {
+                type: 'pie',
+                data: data,
+                options: options
+            });
+
+        }
+    });
+}
+
+{% endblock %}

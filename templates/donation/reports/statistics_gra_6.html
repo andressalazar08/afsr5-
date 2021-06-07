@@ -1,0 +1,121 @@
+{% extends 'accounts/base.html' %}
+
+{% block import_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.17/css/bootstrap-select.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.css">
+    <style>
+	canvas{
+		-moz-user-select: none;
+		-webkit-user-select: none;
+		-ms-user-select: none;
+	}
+	</style>
+{% endblock %}
+
+{% block content %}
+
+{% for message in messages %}
+    <p id="messages">{{message}}</p>
+{% endfor %}
+
+
+    <h2>Estadísticas de número de donantes</h2>
+
+    <div class="card-group">
+        <div class="col-xl-6 col-md-6 mb-6 offset-3">
+            <div class="card border-info border-left-info">
+                <div class="card-body">
+                    <h5 class="card-title text-info">Número de donantes</h5>
+                    <div class="form-group">
+                        <label for="year">Indicar el Año</label>
+                        <!--<input id="year" name="year" type="number">-->
+                        <select class="form-control" name="year" id="year"></select>
+                    </div>
+                    <div class="form-group">
+                        <h6>Donantes</h6>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" name="approved" id="inlineRadio1" value="all" checked>
+                          <label class="form-check-label" for="inlineRadio1">TODOS</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" name="approved" id="inlineRadio2" value="no">
+                          <label class="form-check-label" for="inlineRadio2">Nuevos</label>
+                        </div>
+                        <button onclick="make_report_donation()" class="btn btn-info btn-lg btn-block" value="reporte-traslados">Generar reporte</button>
+                        <a class="btn btn-info btn-lg btn-block" href="{% url 'statistics_gra' %}">Regresar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+
+    <div style="width:75%;">
+		<canvas id="line-chart" width="800" height="450"></canvas>
+	</div>
+
+
+
+{% endblock %}
+
+{% block import_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.17/js/bootstrap-select.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"> </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+{% endblock %}
+
+{% block js %}
+
+for (i = new Date().getFullYear(); i > 1900; i--)
+{
+    $('#year').append($('<option />').val(i).html(i));
+}
+
+function make_report_donation(){
+    var year = $('#year').val();
+    var option = "";
+    if(document.getElementById('inlineRadio1').checked) {
+        option="todos";
+    } else {
+        option="nuevos";
+    }
+    $.ajax({
+        url: '/ajax/statistics_gra_6_ajax/',
+        data: {
+            'year': year,
+            'option': option
+        },
+        dataType: 'json',
+        traditional: true,
+        success: function (result) {
+            var query_labels = result.labels;
+            var values = result.values
+
+            new Chart(document.getElementById("line-chart"), {
+                type: 'line',
+                data: {
+                    labels: query_labels,
+                    datasets: [{
+                        data: values,
+                        label: "Donantes",
+                        borderColor: "#3e95cd",
+                        fill: false,
+                        lineTension: 0
+                        }
+                        ]
+                    },
+                    options: {
+                        title: {
+                        display: true,
+                        text: 'Estadísticas de donantes ' + year
+                    }
+                }
+            });
+        }
+    });
+}
+
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'accounts/base.html' %}
+
+{% block import_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.17/css/bootstrap-select.min.css">
+{% endblock %}
+
+{% block content %}
+
+{% for message in messages %}
+    <p id="messages">{{message}}</p>
+{% endfor %}
+
+<form method="POST">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="select-product" class="form-control-label">Seleccionar productos</label>
+        <select class="form-control selectpicker" name="product" id="select-product" data-live-search="true">
+        <!--<option data-tokens="china">China</option> -->
+        {% for product in products %}
+            <option value="{{product.id}}" data-tokens="{{product.id}}">{{product.name}}</option>
+        {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="quantity" class="form-control-label">Cantidad de unidad de medida</label>
+        <input class="form-control" id="quantity" type="number" name="quantity">
+    </div>
+    <div class="form-group">
+        <label for="measure" class="form-control-label">Unidad de medida</label>
+        <select id="measure" class="form-control" name="measure">
+            {% for key, value in options.items %}
+                <option value="{{key}}">{{value}}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="quantity" class="form-control-label">Número de productos</label>
+        <input class="form-control" id="quantity_products" type="number" name="number_products">
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Añadir producto</button>
+        </button>
+
+  </div>
+
+</form>
+
+{% endblock %}
+
+{% block import_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.17/js/bootstrap-select.min.js"></script>
+{% endblock %}
+
+{% block js %}
+
+{% endblock %}

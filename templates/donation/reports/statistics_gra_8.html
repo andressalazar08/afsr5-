@@ -1,0 +1,85 @@
+{% extends 'accounts/base.html' %}
+
+{% block import_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.17/css/bootstrap-select.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.css">
+    <style>
+	canvas{
+		-moz-user-select: none;
+		-webkit-user-select: none;
+		-ms-user-select: none;
+	}
+	</style>
+{% endblock %}
+
+{% block content %}
+
+{% for message in messages %}
+    <p id="messages">{{message}}</p>
+{% endfor %}
+
+
+    <h2>Categorias más donadas</h2>
+    <br>
+
+    <div style="width:100%;">
+		<canvas id="line-chart" width="800" height="450"></canvas>
+	</div>
+    <br>
+    <div style="text-align: center">
+        <a class="btn btn-info btn-lg" href="{% url 'statistics_gra' %}">Regresar</a>
+    </div>
+
+
+
+{% endblock %}
+
+{% block import_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.17/js/bootstrap-select.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"> </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+{% endblock %}
+
+{% block js %}
+    var labels = {{labels|safe}};
+    var data = {{data|safe}};
+    var color = []
+    //console.log(labels);
+
+    function random_rgba() {
+        var o = Math.round, r = Math.random, s = 255;
+        return 'rgba(' + o(r()*s) + ',' + o(r()*s) + ',' + o(r()*s) + ',' + r().toFixed(1) + ')';
+    }
+
+    for (var i= 0; i < labels.length; i++){
+        var randomColor = random_rgba();
+        //console.log(randomColor);
+        color.push(randomColor);
+    }
+    console.log(color);
+    new Chart(document.getElementById("line-chart"), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                label: "Donaciones",
+                borderColor: "rgb(255, 99, 132)",
+                backgroundColor: color,
+                fill: false,
+                lineTension: 0
+                }
+                ]
+            },
+            options: {
+                title: {
+                display: true,
+                text: 'Estadísticas de donaciones'
+            }
+        }
+    });
+
+{% endblock %}

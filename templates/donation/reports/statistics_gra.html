@@ -1,0 +1,166 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block import_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.17/css/bootstrap-select.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.css">
+    <style>
+	canvas{
+		-moz-user-select: none;
+		-webkit-user-select: none;
+		-ms-user-select: none;
+	}
+	</style>
+{% endblock %}
+
+{% block header %}
+<div class="header bg-primary pb-6">
+  <div class="container-fluid">
+    <div class="header-body">
+      <div class="row align-items-center py-4">
+        <div class="col-lg-6 col-7">
+          <h6 class="h2 text-white d-inline-block mb-0">Módulo de estadísticas gráficas</h6>
+          <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+            <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+              <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="fas fa-home"></i></a></li>
+              <li class="breadcrumb-item active"><a href="#">Estadísticas</a></li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<br>
+{% endblock %}
+
+{% block content %}
+
+{% for message in messages %}
+    <p id="messages">{{message}}</p>
+{% endfor %}
+
+<div class="row">
+    <div class="col-3 card border-danger border-left-danger">
+        <div class="card-body" style="text-align: center">
+            <figure>
+              <img class="img-fluid" src="{% static 'img/bodega.png' %}" style="height: 150px;">
+              <figcaption>
+                  <label for="select1">Atracción</label>
+                  <select id="select1" class="form-control">
+                      <option value="1">Número de donaciones</option>
+                      <option value="2">Total de donaciones </option>
+                      <option value="3">Donantes</option>
+                  </select>
+                  <br>
+                  <button class="btn btn-danger" onclick="activar(1)">Seleccionar</button>
+              </figcaption>
+            </figure>
+        </div>
+    </div>
+    <div class="col-3 offset-1 card border-danger border-left-danger">
+        <div class="card-body" style="text-align: center">
+            <figure>
+              <img class="img-fluid" src="{% static 'img/transporte.png' %}" style="height: 150px;">
+              <figcaption>
+                  <label for="select2">Almacenamiento y conformación</label>
+                  <select id="select2" class="form-control">
+                      <option value="1">Familias atendidas vs Familias pendientes de recibir donación</option>
+                      <option value="2">Inventario de productos</option>
+                      <option value="3">Inventario de productos por categoria</option>
+                      <option value="4">Top 10 de los productos con menor existencia</option>
+                      <option value="5">Cantidad de producto recibido (tons) en bodega vs transferido a aliados</option>
+                      <option value="6">Más donados por categoria</option>
+                      <option value="7">Top 10 productos más donados por categoria</option>
+                  </select>
+                  <br>
+                  <button class="btn btn-danger" onclick="activar(2)">Seleccionar</button>
+              </figcaption>
+            </figure>
+        </div>
+    </div>
+    <div class="col-3 offset-1 card border-danger border-left-danger">
+        <div class="card-body" style="text-align: center">
+            <figure>
+              <img class="img-fluid" src="{% static 'img/productos.png' %}" style="height: 150px;">
+              <figcaption>
+                  <label for="select3">Entrega</label>
+                  <select id="select3" class="form-control">
+                      <option value="1">Número de kits entregados</option>
+                      <option value="2">Kits entregados por barrio</option>
+                      <option value="3">Viajes de vehiculos diario</option>
+                      <option value="4">Viajes de vehiculos por año</option>
+                      <option value="5">Porcentaje de utilización histórico</option>
+                      <option value="6">Porcentaje de entregas perfectas</option>
+                  </select>
+                  <br>
+                  <button class="btn btn-danger" onclick="activar(3)">Seleccionar</button>
+              </figcaption>
+            </figure>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block import_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.17/js/bootstrap-select.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"> </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+{% endblock %}
+
+{% block js %}
+
+function activar(id){
+    var select_report = $("#select"+id).val();
+
+    if(id=="1"){
+        if(select_report==1){
+            window.location.href = "{% url 'statistics_gra_1' %}";
+        }else if(select_report==2){
+            window.location.href = "{% url 'statistics_gra_2' %}";
+        }else if(select_report==3){
+            window.location.href = "{% url 'statistics_gra_6' %}";
+        }
+    }else if(id=="2"){
+        if(select_report==1){
+            window.location.href = "{% url 'statistics_gra_5' %}";
+        }else if(select_report==2){
+            window.location.href = "{% url 'statistics_gra_7' %}";
+        }else if(select_report==3){
+            window.location.href = "{% url 'statistics_gra_12' %}";
+        }else if(select_report==4){
+            window.location.href = "{% url 'statistics_gra_4' %}";
+        }else if(select_report==5){
+            window.location.href = "{% url 'statistics_gra_3' %}";
+        }else if(select_report==6){
+            window.location.href = "{% url 'statistics_gra_8' %}";
+        }else if(select_report==7){
+            window.location.href = "{% url 'statistics_gra_16' %}";
+        }
+    }else if(id=="3"){
+        if(select_report==1){
+            window.location.href = "{% url 'statistics_gra_9' %}";
+        }else if(select_report==2){
+            window.location.href = "{% url 'statistics_gra_10' %}";
+        }else if(select_report==3){
+            window.location.href = "{% url 'statistics_gra_11' %}";
+        }else if(select_report==4){
+            window.location.href = "{% url 'statistics_gra_13' %}";
+        }else if(select_report==5){
+            window.location.href = "{% url 'statistics_gra_14' %}";
+        }else if(select_report==6){
+            window.location.href = "{% url 'statistics_gra_15' %}";
+        }
+
+    }
+
+
+
+}
+
+
+{% endblock %}
